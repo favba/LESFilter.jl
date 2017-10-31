@@ -29,7 +29,7 @@ function fftfreqn(n::Integer,d::Real)
   end
 end
 
-function lesfilter(field::A ; fil::String="G", boxdim::Float64=nothing,lengths::Tuple{Real,Real,Real}=nothing) where A<:Union{Array{Float64,3},Array{Float32,3}}
+function lesfilter(field::A ; fil::String="G", boxdim::Real=nothing,lengths::Tuple{Real,Real,Real}=nothing) where A<:Union{Array{Float64,3},Array{Float32,3}}
   nx,ny,nz = size(field)
   xs,ys,zs = lengths
 
