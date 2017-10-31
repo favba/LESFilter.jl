@@ -44,7 +44,7 @@ function lesfilter(field::A ; fil::String="G", boxdim::Real=nothing,lengths::Tup
   return irfft(fieldhat,nx)
 end
 
-function loopgaussian!(fieldhat::AbstractArray{Complex128,3},kx2::AbstractVector,ky2::AbstractVector,kz2::AbstractVector,boxdim::Real)
+function loopgaussian!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVector,ky2::AbstractVector,kz2::AbstractVector,boxdim::Real)
   aux = -((π*boxdim)^2)/6
   Threads.@threads for k = 1:length(kz2)
     for j = 1:length(ky2)
@@ -56,7 +56,7 @@ function loopgaussian!(fieldhat::AbstractArray{Complex128,3},kx2::AbstractVector
   nothing
 end
 
-function lesfilter(field::AbstractPaddedArray{Float64,3,false} ; fil::String="G", boxdim::Real=nothing,lengths::NTuple{3,Real}=nothing)
+function lesfilter(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G", boxdim::Real=nothing,lengths::NTuple{3,Real}=nothing)
   nx,ny,nz = size(real(field))
   xs,ys,zs = lengths
   newfield = copy(field)
@@ -73,7 +73,7 @@ function lesfilter(field::AbstractPaddedArray{Float64,3,false} ; fil::String="G"
 end
 
 
-function lesfilter!(field::AbstractPaddedArray{Float64,3,false} ; fil::String="G", boxdim::Real=nothing,lengths::NTuple{3,Real}=nothing)
+function lesfilter!(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G", boxdim::Real=nothing,lengths::NTuple{3,Real}=nothing)
   nx,ny,nz = size(real(field))
   xs,ys,zs = lengths
 
