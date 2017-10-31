@@ -74,7 +74,7 @@ end
 
 
 function lesfilter!(field::AbstractPaddedArray{Float64,3,false} ; fil::String="G", boxdim::Real=nothing,lengths::NTuple{3,Real}=nothing)
-  nx,ny,nz = size(field.r)
+  nx,ny,nz = size(real(field))
   xs,ys,zs = lengths
 
   fieldhat = complex(rfft!(field))
