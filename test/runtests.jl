@@ -23,7 +23,7 @@ field = @. sin(3*x) + cos(3*y) + sin(4*z)
 
 correct(Δ::Real) = @. exp(-2Δ^2/3) * (exp(7Δ^2/24) * (cos(3y) + sin(3x)) + sin(4z)) 
 dx = x[2]
-for df in 0:0.1:1
+for df in 1:0.5:10
   Δ = df*dx
   @test lesfilter(field,boxdim=Δ,lengths=(lx,ly,lz)) ≈ correct(Δ)
 end
