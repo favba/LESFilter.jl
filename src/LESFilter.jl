@@ -57,7 +57,7 @@ function loopgaussian!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVector,
 end
 
 function loopcutoff!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVector,ky2::AbstractVector,kz2::AbstractVector,boxdim::Real)
-  aux = ((π/boxdim)^2)
+  aux = ((1/2boxdim)^2)
   Threads.@threads for k = 1:length(kz2)
     for j = 1:length(ky2)
       @simd for i = 1:length(kx2)
