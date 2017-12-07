@@ -68,6 +68,18 @@ function loopcutoff!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVector,ky
   nothing
 end
 
+function loopanigaussian!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVector,ky2::AbstractVector,kz2::AbstractVector,boxdimxy::Real,boxdimz::Real)
+  auxxy = -((π*boxdimxy)^2)/6
+  auxz = -((π*boxdimz)^2)/6
+  Threads.@threads for k = 1:length(kz2)
+    for j = 1:length(ky2)
+      @simd for i = 1:length(kx2)
+        @inbounds fieldhat[i,j,k] = fieldhat[i,j,k]*exp((kx2[i]+ky2[j])*auxxy + kz2[k]*auxz)
+      end
+    end
+  end
+  nothing
+end
 
 function lesfilter(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G", boxdim::Real=nothing,lengths::NTuple{3,Real}=nothing)
   newfield = copy(field)
@@ -78,7 +90,7 @@ function lesfilter(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G",
 end
 
 
-function lesfilter!(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G", boxdim::Real=nothing,lengths::NTuple{3,Real}=nothing)
+function lesfilter!(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G", boxdim::Real=nothing, boxdimz::Real=nothing, lengths::NTuple{3,Real}=nothing)
   nx,ny,nz = size(real(field))
   xs,ys,zs = lengths
 
@@ -88,12 +100,19 @@ function lesfilter!(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G"
   ky2 = fftfreq(ny,ys).^2
   kz2 = fftfreq(nz,zs).^2
 
-  if fil == "G"
-    loopgaussian!(fieldhat,kx2,ky2,kz2,boxdim)
-  elseif fil == "C"
-    loopcutoff!(fieldhat,kx2,ky2,kz2,boxdim)
+  if boxdimz == nothing
+    if fil == "G"
+      loopgaussian!(fieldhat,kx2,ky2,kz2,boxdim)
+    elseif fil == "C"
+      loopcutoff!(fieldhat,kx2,ky2,kz2,boxdim)
+    end
+  else
+    if fil == "G"
+      loopanigaussian!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
+    elseif fil == "C"
+      #loopanicutoff!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
+    end
   end
-
   return irfft!(field)
 end
 
