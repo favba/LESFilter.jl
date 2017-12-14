@@ -68,6 +68,21 @@ function loopcutoff!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVector,ky
   nothing
 end
 
+function loopbox!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVector,ky2::AbstractVector,kz2::AbstractVector,boxdim::Real)
+  aux = π*boxdim
+  a = fieldhat[1]
+  Threads.@threads for k = 1:length(kz2)
+    for j = 1:length(ky2)
+      @fastmath @simd for i = 1:length(kx2)
+        mk = sqrt(kx2[i]+ky2[j]+kz2[k])
+        @inbounds fieldhat[i,j,k] = fieldhat[i,j,k]*sinpi(mk*boxdim)/(mk*aux)
+      end
+    end
+  end
+  fieldhat[1] = a
+  nothing
+end
+
 function loopanigaussian!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVector,ky2::AbstractVector,kz2::AbstractVector,boxdimxy::Real,boxdimz::Real)
   auxxy = -((π*boxdimxy)^2)/6
   auxz = -((π*boxdimz)^2)/6
@@ -90,7 +105,7 @@ function lesfilter(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G",
 end
 
 
-function lesfilter!(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G", boxdim::Real=nothing, boxdimz::Real=nothing, lengths::NTuple{3,Real}=nothing)
+function lesfilter!(field::AbstractPaddedArray{<:Real,3,false}, fil::String="G", boxdim::Real=nothing, lengths::NTuple{3,Real}=nothing)
   nx,ny,nz = size(real(field))
   xs,ys,zs = lengths
 
@@ -100,21 +115,35 @@ function lesfilter!(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G"
   ky2 = fftfreq(ny,ys).^2
   kz2 = fftfreq(nz,zs).^2
 
-  if boxdimz == nothing
-    if fil == "G"
-      loopgaussian!(fieldhat,kx2,ky2,kz2,boxdim)
-    elseif fil == "C"
-      loopcutoff!(fieldhat,kx2,ky2,kz2,boxdim)
-    end
-  else
-    if fil == "G"
-      loopanigaussian!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
-    elseif fil == "C"
-      #loopanicutoff!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
-    end
+  if fil == "G"
+    loopgaussian!(fieldhat,kx2,ky2,kz2,boxdim)
+  elseif fil == "C"
+    loopcutoff!(fieldhat,kx2,ky2,kz2,boxdim)
+  elseif fil == "B"
+    loopbox!(fieldhat,kx2,ky2,kz2,boxdim)
   end
+
   return irfft!(field)
 end
 
+function lesfilter!(field::AbstractPaddedArray{<:Real,3,false}, fil::String="G", boxdim::Real=nothing, boxdimz::Real=nothing, lengths::NTuple{3,Real}=nothing)
+  nx,ny,nz = size(real(field))
+  xs,ys,zs = lengths
+
+  fieldhat = complex(rfft!(field))
+
+  kx2 = rfftfreq(nx,xs).^2
+  ky2 = fftfreq(ny,ys).^2
+  kz2 = fftfreq(nz,zs).^2
+
+  if fil == "G"
+    loopanigaussian!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
+  elseif fil == "C"
+    #loopanicutoff!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
+  elseif fil == "B"
+    #loopanibox!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
+  end
+  return irfft!(field)
+end
 
 end # module
