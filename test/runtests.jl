@@ -1,5 +1,5 @@
 using LESFilter
-using InplaceRealFFTW
+using InplaceRealFFT
 using Base.Test
 
 #=
@@ -25,14 +25,14 @@ correct(Δ::Real) = @. exp(-2Δ^2/3) * (exp(7Δ^2/24) * (cos(3y) + sin(3x)) + si
 dx = x[2]
 for df in 1:0.5:10
   Δ = df*dx
-  @test lesfilter(field,boxdim=Δ,lengths=(lx,ly,lz)) ≈ correct(Δ)
+  @test lesfilter(field,"G",Δ,(lx,ly,lz)) ≈ correct(Δ)
 end
 
 field2 = PaddedArray(field)
 
 for df in 1:0.5:10
   Δ = df*dx
-  @test lesfilter!(field2,boxdim=Δ,lengths=(lx,ly,lz)) ≈ correct(Δ)
+  @test lesfilter!(field2,"G",Δ,(lx,ly,lz)) ≈ correct(Δ)
   copy!(real(field2),field)
 end
 

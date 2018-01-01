@@ -1,7 +1,7 @@
 __precompile__()
 module LESFilter
 
-using InplaceRealFFTW, StaticArrays
+using InplaceRealFFT, StaticArrays
 
 export rfftfreq, fftfreq, rfftfreqn, fftfreqn, lesfilter!, lesfilter
 
@@ -29,7 +29,7 @@ function fftfreqn(n::Integer,d::Real)
   end
 end
 
-function lesfilter(field::AbstractArray{<:Real,3} ; fil::String="G", boxdim::Real=nothing,lengths::Tuple{Real,Real,Real}=nothing)
+function lesfilter(field::AbstractArray{<:Real,3} , fil::String, boxdim::Real,lengths::Tuple{Real,Real,Real})
   nx,ny,nz = size(field)
   xs,ys,zs = lengths
 
@@ -96,7 +96,7 @@ function loopanigaussian!(fieldhat::AbstractArray{<:Complex,3},kx2::AbstractVect
   nothing
 end
 
-function lesfilter(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G", boxdim::Real=nothing,lengths::NTuple{3,Real}=nothing)
+function lesfilter(field::AbstractPaddedArray{<:Real,3} , fil::String, boxdim::Real,lengths::NTuple{3,Real})
   newfield = copy(field)
 
   lesfilter!(newfield,fil=fil,boxdim=boxdim,lengths=lengths)
@@ -105,7 +105,7 @@ function lesfilter(field::AbstractPaddedArray{<:Real,3,false} ; fil::String="G",
 end
 
 
-function lesfilter!(field::AbstractPaddedArray{<:Real,3,false}, fil::String="G", boxdim::Real=nothing, lengths::NTuple{3,Real}=nothing)
+function lesfilter!(field::AbstractPaddedArray{<:Real,3}, fil::String, boxdim::Real, lengths::NTuple{3,Real})
   nx,ny,nz = size(real(field))
   xs,ys,zs = lengths
 
@@ -126,7 +126,7 @@ function lesfilter!(field::AbstractPaddedArray{<:Real,3,false}, fil::String="G",
   return irfft!(field)
 end
 
-function lesfilter!(field::AbstractPaddedArray{<:Real,3,false}, fil::String="G", boxdim::Real=nothing, boxdimz::Real=nothing, lengths::NTuple{3,Real}=nothing)
+function lesfilter!(field::AbstractPaddedArray{<:Real,3}, fil::String, boxdims::NTuple{2,Real}, lengths::NTuple{3,Real})
   nx,ny,nz = size(real(field))
   xs,ys,zs = lengths
 
@@ -137,7 +137,7 @@ function lesfilter!(field::AbstractPaddedArray{<:Real,3,false}, fil::String="G",
   kz2 = fftfreq(nz,zs).^2
 
   if fil == "G"
-    loopanigaussian!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
+    loopanigaussian!(fieldhat,kx2,ky2,kz2,boxdims[1],boxdims[2])
   elseif fil == "C"
     #loopanicutoff!(fieldhat,kx2,ky2,kz2,boxdim,boxdimz)
   elseif fil == "B"
