@@ -1,31 +1,31 @@
 __precompile__()
 module LESFilter
 
-using InplaceRealFFT, StaticArrays
+using InplaceRealFFT
 
 export rfftfreq, fftfreq, rfftfreqn, fftfreqn, lesfilter!, lesfilter
 
 function rfftfreq(n::Integer,s::Real) 
   d = 2π*s
-  SVector{n÷2 + 1,Float64}(Float64[(n/2 - i)/d for i = n/2:-1:0])
+  Float64[(n/2 - i)/d for i = n/2:-1:0]
 end
 
 function fftfreq(n::Integer,s::Real)
   d = 2π*s
   if iseven(n)
-    return SVector{n,Float64}(vcat([(n/2 - i)/(d) for i = n/2:-1:1],[-i/(d) for i = n/2:-1:1]))
-  else return SVector{n,Float64}(vcat([(n/2 - i)/(d) for i = n/2:-1:0],[-i/(d) for i = (n-1)/2:-1:1]))
+    return vcat(Float64[(n/2 - i)/(d) for i = n/2:-1:1],Float64[-i/(d) for i = n/2:-1:1])
+  else return vcat(Float64[(n/2 - i)/(d) for i = n/2:-1:0],Float64[-i/(d) for i = (n-1)/2:-1:1])
   end
 end
 
 function rfftfreqn(n::Integer,d::Real)
-  SVector{n÷2 + 1,Float64}(Float64[(n/2 - i)/d for i = n/2:-1:0])
+  Float64[(n/2 - i)/d for i = n/2:-1:0]
 end
 
 function fftfreqn(n::Integer,d::Real)
   if iseven(n)
-    return SVector{n,Float64}(vcat([(n/2 - i)/(d) for i = n/2:-1:1],[-i/(d) for i = n/2:-1:1]))
-  else return SVector{n,Float64}(vcat([(n/2 - i)/(d) for i = n/2:-1:0],[-i/(d) for i = (n-1)/2:-1:1]))
+    return vcat(Float64[(n/2 - i)/(d) for i = n/2:-1:1],Float64[-i/(d) for i = n/2:-1:1])
+  else return vcat(Float64[(n/2 - i)/(d) for i = n/2:-1:0],Float64[-i/(d) for i = (n-1)/2:-1:1])
   end
 end
 
